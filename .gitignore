@@ -1,0 +1,5 @@
+.token
+.procedural_state.json
+ProceduralManager.ps1
+node_modules/
+*.log
