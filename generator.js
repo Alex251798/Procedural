@@ -1,32 +1,58 @@
 const fs = require('fs');
 const path = require('path');
 
+const SUFFIXES = [
+  '',
+  '_v2',
+  '_v3',
+  '_optimizada',
+  '_avanzada',
+  '_modular',
+  '_segura',
+  '_extendida',
+  '_rapida',
+  '_eficiente',
+  '_core',
+  '_util'
+];
+
+const ACTIONS = [
+  'implementar',
+  'agregar',
+  'incorporar',
+  'optimizar',
+  'refactorizar',
+  'ampliar'
+];
+
 const CATEGORIES = [
   {
-    cat: 'math',
-    type: 'linear_algebra',
-    title: 'linear algebra vector and matrix transformations',
-    gen: (id) => `
-function dotProduct(vecA, vecB) {
-  if (vecA.length !== vecB.length) throw new Error("Vector dimension mismatch");
-  let sum = 0;
+    cat: 'matematicas',
+    slug: 'algebra_lineal',
+    branch: 'algebra-lineal',
+    title: 'operaciones con vectores y matrices',
+    desc: 'Implementacion modular de algoritmos y utilidades de algebra lineal.',
+    gen: (ver) => `
+function productoPunto(vecA, vecB) {
+  if (vecA.length !== vecB.length) throw new Error("Las dimensiones de los vectores no coinciden");
+  let suma = 0;
   for (let i = 0; i < vecA.length; i++) {
-    sum += vecA[i] * vecB[i];
+    suma += vecA[i] * vecB[i];
   }
-  return sum;
+  return suma;
 }
 
-function magnitude(vec) {
-  return Math.sqrt(dotProduct(vec, vec));
+function magnitudVector(vec) {
+  return Math.sqrt(productoPunto(vec, vec));
 }
 
-function normalize(vec) {
-  const mag = magnitude(vec);
+function normalizarVector(vec) {
+  const mag = magnitudVector(vec);
   if (mag === 0) return vec.map(() => 0);
   return vec.map((val) => val / mag);
 }
 
-function crossProduct3D(a, b) {
+function productoCruz3D(a, b) {
   return [
     a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
@@ -34,154 +60,167 @@ function crossProduct3D(a, b) {
   ];
 }
 
-function matrixMultiply(matA, matB) {
-  const rowsA = matA.length;
-  const colsA = matA[0].length;
-  const rowsB = matB.length;
-  const colsB = matB[0].length;
-  if (colsA !== rowsB) throw new Error("Incompatible matrix dimensions");
+function multiplicarMatrices(matA, matB) {
+  const filasA = matA.length;
+  const colA = matA[0].length;
+  const filasB = matB.length;
+  const colB = matB[0].length;
+  if (colA !== filasB) throw new Error("Dimensiones de matrices incompatibles");
 
-  const result = Array.from({ length: rowsA }, () => Array(colsB).fill(0));
-  for (let i = 0; i < rowsA; i++) {
-    for (let j = 0; j < colsB; j++) {
-      let sum = 0;
-      for (let k = 0; k < colsA; k++) {
-        sum += matA[i][k] * matB[k][j];
+  const resultado = Array.from({ length: filasA }, () => Array(colB).fill(0));
+  for (let i = 0; i < filasA; i++) {
+    for (let j = 0; j < colB; j++) {
+      let suma = 0;
+      for (let k = 0; k < colA; k++) {
+        suma += matA[i][k] * matB[k][j];
       }
-      result[i][j] = sum;
+      resultado[i][j] = suma;
     }
   }
-  return result;
+  return resultado;
 }
 
 module.exports = {
-  version: "${id}",
-  dotProduct,
-  magnitude,
-  normalize,
-  crossProduct3D,
-  matrixMultiply
+  version: "${ver}",
+  productoPunto,
+  magnitudVector,
+  normalizarVector,
+  productoCruz3D,
+  multiplicarMatrices
 };`
   },
   {
-    cat: 'math',
-    type: 'number_theory',
-    title: 'number theory prime sieve and modular arithmetic',
-    gen: (id) => `
-function sieveOfEratosthenes(limit) {
-  const primes = [];
-  const isPrime = new Uint8Array(limit + 1).fill(1);
-  isPrime[0] = 0;
-  isPrime[1] = 0;
+    cat: 'matematicas',
+    slug: 'teoria_numeros',
+    branch: 'teoria-numeros',
+    title: 'criba de eratostenes y calculo mcd',
+    desc: 'Implementacion de criba de numeros primos y algoritmo de euclides.',
+    gen: (ver) => `
+function cribaEratostenes(limite) {
+  const primos = [];
+  const esPrimo = new Uint8Array(limite + 1).fill(1);
+  esPrimo[0] = 0;
+  esPrimo[1] = 0;
 
-  for (let p = 2; p * p <= limit; p++) {
-    if (isPrime[p]) {
-      for (let i = p * p; i <= limit; i += p) {
-        isPrime[i] = 0;
+  for (let p = 2; p * p <= limite; p++) {
+    if (esPrimo[p]) {
+      for (let i = p * p; i <= limite; i += p) {
+        esPrimo[i] = 0;
       }
     }
   }
 
-  for (let i = 2; i <= limit; i++) {
-    if (isPrime[i]) primes.push(i);
+  for (let i = 2; i <= limite; i++) {
+    if (esPrimo[i]) primos.push(i);
   }
-  return primes;
+  return primos;
 }
 
-function gcd(a, b) {
+function maximoComunDivisor(a, b) {
   let x = Math.abs(a);
   let y = Math.abs(b);
   while (y) {
-    const t = y;
+    const temporal = y;
     y = x % y;
-    x = t;
+    x = temporal;
   }
   return x;
 }
 
-function lcm(a, b) {
+function minimoComunMultiplo(a, b) {
   if (a === 0 || b === 0) return 0;
-  return Math.abs((a * b) / gcd(a, b));
+  return Math.abs((a * b) / maximoComunDivisor(a, b));
 }
 
-function modPow(base, exponent, modulus) {
-  if (modulus === 1) return 0;
-  let result = 1n;
-  let b = BigInt(base) % BigInt(modulus);
-  let e = BigInt(exponent);
-  const m = BigInt(modulus);
+function potenciaModular(base, exponente, modulo) {
+  if (modulo === 1) return 0;
+  let res = 1n;
+  let b = BigInt(base) % BigInt(modulo);
+  let e = BigInt(exponente);
+  const m = BigInt(modulo);
 
   while (e > 0n) {
-    if (e % 2n === 1n) result = (result * b) % m;
+    if (e % 2n === 1n) res = (res * b) % m;
     e = e / 2n;
     b = (b * b) % m;
   }
-  return Number(result);
+  return Number(res);
 }
 
 module.exports = {
-  version: "${id}",
-  sieveOfEratosthenes,
-  gcd,
-  lcm,
-  modPow
+  version: "${ver}",
+  cribaEratostenes,
+  maximoComunDivisor,
+  minimoComunMultiplo,
+  potenciaModular
 };`
   },
   {
-    cat: 'math',
-    type: 'statistics_engine',
-    title: 'statistical metrics variance and correlation analyzer',
-    gen: (id) => `
-function mean(arr) {
+    cat: 'matematicas',
+    slug: 'estadistica',
+    branch: 'estadistica-descriptiva',
+    title: 'calculo de varianza y correlacion pearson',
+    desc: 'Funciones de analisis estadistico descriptivo y correlacion.',
+    gen: (ver) => `
+function calcularMedia(arr) {
   if (!arr.length) return 0;
   return arr.reduce((acc, val) => acc + val, 0) / arr.length;
 }
 
-function median(arr) {
+function calcularMediana(arr) {
   if (!arr.length) return 0;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  const ordenado = [...arr].sort((a, b) => a - b);
+  const mitad = Math.floor(ordenado.length / 2);
+  return ordenado.length % 2 !== 0 ? ordenado[mitad] : (ordenado[mitad - 1] + ordenado[mitad]) / 2;
 }
 
-function variance(arr) {
+function calcularVarianza(arr) {
   if (arr.length <= 1) return 0;
-  const m = mean(arr);
+  const m = calcularMedia(arr);
   return arr.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / (arr.length - 1);
 }
 
-function standardDeviation(arr) {
-  return Math.sqrt(variance(arr));
+function desviacionEstandar(arr) {
+  return Math.sqrt(calcularVarianza(arr));
 }
 
-function pearsonCorrelation(arrX, arrY) {
+function correlacionPearson(arrX, arrY) {
   if (arrX.length !== arrY.length || arrX.length === 0) return 0;
-  const meanX = mean(arrX);
-  const meanY = mean(arrY);
-  let num = 0;
+  const mediaX = calcularMedia(arrX);
+  const mediaY = calcularMedia(arrY);
+  let numerador = 0;
   let denX = 0;
   let denY = 0;
 
   for (let i = 0; i < arrX.length; i++) {
-    const diffX = arrX[i] - meanX;
-    const diffY = arrY[i] - meanY;
-    num += diffX * diffY;
+    const diffX = arrX[i] - mediaX;
+    const diffY = arrY[i] - mediaY;
+    numerador += diffX * diffY;
     denX += diffX * diffX;
     denY += diffY * diffY;
   }
 
-  const denominator = Math.sqrt(denX * denY);
-  return denominator === 0 ? 0 : num / denominator;
+  const denominador = Math.sqrt(denX * denY);
+  return denominador === 0 ? 0 : numerador / denominador;
 }
 
-module.exports = { version: "${id}", mean, median, variance, standardDeviation, pearsonCorrelation };`
+module.exports = {
+  version: "${ver}",
+  calcularMedia,
+  calcularMediana,
+  calcularVarianza,
+  desviacionEstandar,
+  correlacionPearson
+};`
   },
   {
-    cat: 'math',
-    type: 'geometry_poly',
-    title: 'computational geometry shoelace and hull calculations',
-    gen: (id) => `
-function polygonArea(vertices) {
+    cat: 'geometria',
+    slug: 'poligonos',
+    branch: 'geometria-poligonos',
+    title: 'calculo de area de poligonos mediante shoelace',
+    desc: 'Algoritmos de geometria computacional y calculo de areas.',
+    gen: (ver) => `
+function calcularAreaPoligono(vertices) {
   const n = vertices.length;
   if (n < 3) return 0;
   let area = 0;
@@ -193,45 +232,52 @@ function polygonArea(vertices) {
   return Math.abs(area) / 2;
 }
 
-function distance2D(p1, p2) {
+function distanciaEuclidiana(p1, p2) {
   const dx = p1.x - p2.x;
   const dy = p1.y - p2.y;
   return Math.hypot(dx, dy);
 }
 
-function orientation(p, q, r) {
-  const val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-  if (val === 0) return 0;
-  return val > 0 ? 1 : 2;
+function orientacionPuntos(p, q, r) {
+  const valor = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+  if (valor === 0) return 0;
+  return valor > 0 ? 1 : 2;
 }
 
-module.exports = { version: "${id}", polygonArea, distance2D, orientation };`
+module.exports = {
+  version: "${ver}",
+  calcularAreaPoligono,
+  distanciaEuclidiana,
+  orientacionPuntos
+};`
   },
   {
-    cat: 'math',
-    type: 'combinatorics',
-    title: 'combinatorics permutations and combinations calculator',
-    gen: (id) => `
-function factorialBig(n) {
-  let res = 1n;
-  for (let i = 2n; i <= BigInt(n); i++) res *= i;
-  return res;
+    cat: 'matematicas',
+    slug: 'combinatoria',
+    branch: 'combinatoria',
+    title: 'calculo de combinaciones y permutaciones',
+    desc: 'Utilidades combinatorias con soporte para factoriales y coeficientes binomiales.',
+    gen: (ver) => `
+function factorial(n) {
+  let resultado = 1n;
+  for (let i = 2n; i <= BigInt(n); i++) resultado *= i;
+  return resultado;
 }
 
-function combinations(n, k) {
+function combinaciones(n, k) {
   if (k < 0 || k > n) return 0n;
   if (k === 0 || k === n) return 1n;
-  const actualK = k > n - k ? n - k : k;
-  let num = 1n;
-  let den = 1n;
-  for (let i = 1n; i <= BigInt(actualK); i++) {
-    num *= BigInt(n) - i + 1n;
-    den *= i;
+  const kReal = k > n - k ? n - k : k;
+  let numerador = 1n;
+  let denominador = 1n;
+  for (let i = 1n; i <= BigInt(kReal); i++) {
+    numerador *= BigInt(n) - i + 1n;
+    denominador *= i;
   }
-  return num / den;
+  return numerador / denominador;
 }
 
-function permutations(n, k) {
+function permutaciones(n, k) {
   if (k < 0 || k > n) return 0n;
   let res = 1n;
   for (let i = 0n; i < BigInt(k); i++) {
@@ -240,205 +286,216 @@ function permutations(n, k) {
   return res;
 }
 
-module.exports = { version: "${id}", factorialBig, combinations, permutations };`
+module.exports = {
+  version: "${ver}",
+  factorial,
+  combinaciones,
+  permutaciones
+};`
   },
   {
-    cat: 'structures',
-    type: 'lru_cache',
-    title: 'least recently used LRU memory cache store',
-    gen: (id) => `
-class LRUCacheNode {
-  constructor(key, value) {
-    this.key = key;
-    this.value = value;
-    this.prev = null;
-    this.next = null;
+    cat: 'estructuras',
+    slug: 'cache_lru',
+    branch: 'cache-lru',
+    title: 'memoria cache con politica lru',
+    desc: 'Estructura de cache en memoria con lista doblemente enlazada.',
+    gen: (ver) => `
+class NodoCache {
+  constructor(clave, valor) {
+    this.clave = clave;
+    this.valor = valor;
+    this.anterior = null;
+    this.siguiente = null;
   }
 }
 
-class LRUCache {
-  constructor(capacity = 100) {
-    this.capacity = capacity;
-    this.map = new Map();
-    this.head = new LRUCacheNode(null, null);
-    this.tail = new LRUCacheNode(null, null);
-    this.head.next = this.tail;
-    this.tail.prev = this.head;
+class CacheLRU {
+  constructor(capacidad = 100) {
+    this.capacidad = capacidad;
+    this.mapa = new Map();
+    this.cabeza = new NodoCache(null, null);
+    this.cola = new NodoCache(null, null);
+    this.cabeza.siguiente = this.cola;
+    this.cola.anterior = this.cabeza;
   }
 
-  _remove(node) {
-    node.prev.next = node.next;
-    node.next.prev = node.prev;
+  _eliminarNodo(nodo) {
+    nodo.anterior.siguiente = nodo.siguiente;
+    nodo.siguiente.anterior = nodo.anterior;
   }
 
-  _add(node) {
-    node.next = this.head.next;
-    node.prev = this.head;
-    this.head.next.prev = node;
-    this.head.next = node;
+  _agregarAlFrente(nodo) {
+    nodo.siguiente = this.cabeza.siguiente;
+    nodo.anterior = this.cabeza;
+    this.cabeza.siguiente.anterior = nodo;
+    this.cabeza.siguiente = nodo;
   }
 
-  get(key) {
-    if (!this.map.has(key)) return null;
-    const node = this.map.get(key);
-    this._remove(node);
-    this._add(node);
-    return node.value;
+  obtener(clave) {
+    if (!this.mapa.has(clave)) return null;
+    const nodo = this.mapa.get(clave);
+    this._eliminarNodo(nodo);
+    this._agregarAlFrente(nodo);
+    return nodo.valor;
   }
 
-  put(key, value) {
-    if (this.map.has(key)) {
-      this._remove(this.map.get(key));
+  guardar(clave, valor) {
+    if (this.mapa.has(clave)) {
+      this._eliminarNodo(this.mapa.get(clave));
     }
-    const node = new LRUCacheNode(key, value);
-    this._add(node);
-    this.map.set(key, node);
+    const nuevoNodo = new NodoCache(clave, valor);
+    this._agregarAlFrente(nuevoNodo);
+    this.mapa.set(clave, nuevoNodo);
 
-    if (this.map.size > this.capacity) {
-      const lru = this.tail.prev;
-      this._remove(lru);
-      this.map.delete(lru.key);
+    if (this.mapa.size > this.capacidad) {
+      const lru = this.cola.anterior;
+      this._eliminarNodo(lru);
+      this.mapa.delete(lru.clave);
     }
   }
 
-  size() {
-    return this.map.size;
+  longitud() {
+    return this.mapa.size;
   }
 }
 
-module.exports = { version: "${id}", LRUCache };`
+module.exports = { version: "${ver}", CacheLRU };`
   },
   {
-    cat: 'structures',
-    type: 'binary_search_tree',
-    title: 'balanced binary search tree structure',
-    gen: (id) => `
-class BSTNode {
-  constructor(value) {
-    this.value = value;
-    this.left = null;
-    this.right = null;
+    cat: 'estructuras',
+    slug: 'arbol_binario',
+    branch: 'arbol-binario',
+    title: 'arbol binario de busqueda con recorridos',
+    desc: 'Estructura de arbol binario con operaciones de insercion y recorrido in-order.',
+    gen: (ver) => `
+class NodoArbol {
+  constructor(valor) {
+    this.valor = valor;
+    this.izquierdo = null;
+    this.derecho = null;
   }
 }
 
-class BinarySearchTree {
+class ArbolBinarioBusqueda {
   constructor() {
-    this.root = null;
-    this.count = 0;
+    this.raiz = null;
+    this.elementos = 0;
   }
 
-  insert(value) {
-    const newNode = new BSTNode(value);
-    this.count++;
-    if (!this.root) {
-      this.root = newNode;
+  insertar(valor) {
+    const nuevo = new NodoArbol(valor);
+    this.elementos++;
+    if (!this.raiz) {
+      this.raiz = nuevo;
       return;
     }
 
-    let current = this.root;
+    let actual = this.raiz;
     while (true) {
-      if (value === current.value) return;
-      if (value < current.value) {
-        if (!current.left) {
-          current.left = newNode;
+      if (valor === actual.valor) return;
+      if (valor < actual.valor) {
+        if (!actual.izquierdo) {
+          actual.izquierdo = nuevo;
           return;
         }
-        current = current.left;
+        actual = actual.izquierdo;
       } else {
-        if (!current.right) {
-          current.right = newNode;
+        if (!actual.derecho) {
+          actual.derecho = nuevo;
           return;
         }
-        current = current.right;
+        actual = actual.derecho;
       }
     }
   }
 
-  contains(value) {
-    let current = this.root;
-    while (current) {
-      if (value === current.value) return true;
-      current = value < current.value ? current.left : current.right;
+  contiene(valor) {
+    let actual = this.raiz;
+    while (actual) {
+      if (valor === actual.valor) return true;
+      actual = valor < actual.valor ? actual.izquierdo : actual.derecho;
     }
     return false;
   }
 
-  inOrderTraversal(callback) {
-    function traverse(node) {
-      if (!node) return;
-      traverse(node.left);
-      callback(node.value);
-      traverse(node.right);
+  recorridoEnOrden(callback) {
+    function visitar(nodo) {
+      if (!nodo) return;
+      visitar(nodo.izquierdo);
+      callback(nodo.valor);
+      visitar(nodo.derecho);
     }
-    traverse(this.root);
+    visitar(this.raiz);
   }
 }
 
-module.exports = { version: "${id}", BinarySearchTree };`
+module.exports = { version: "${ver}", ArbolBinarioBusqueda };`
   },
   {
-    cat: 'structures',
-    type: 'priority_heap',
-    title: 'binary heap priority queue implementation',
-    gen: (id) => `
-class PriorityQueue {
-  constructor(comparator = (a, b) => a - b) {
+    cat: 'estructuras',
+    slug: 'cola_prioridad',
+    branch: 'cola-prioridad',
+    title: 'cola de prioridad basada en monticulo binario',
+    desc: 'Cola de prioridad con soporte para comparador personalizado y heap in-place.',
+    gen: (ver) => `
+class ColaPrioridad {
+  constructor(comparador = (a, b) => a - b) {
     this.heap = [];
-    this.comparator = comparator;
+    this.comparador = comparador;
   }
 
-  enqueue(val) {
-    this.heap.push(val);
-    this._bubbleUp(this.heap.length - 1);
+  insertar(valor) {
+    this.heap.push(valor);
+    this._flotar(this.heap.length - 1);
   }
 
-  dequeue() {
+  extraer() {
     if (!this.heap.length) return null;
-    const top = this.heap[0];
-    const bottom = this.heap.pop();
+    const superior = this.heap[0];
+    const ultimo = this.heap.pop();
     if (this.heap.length > 0) {
-      this.heap[0] = bottom;
-      this._bubbleDown(0);
+      this.heap[0] = ultimo;
+      this._hundir(0);
     }
-    return top;
+    return superior;
   }
 
-  peek() {
+  vistazo() {
     return this.heap[0] || null;
   }
 
-  size() {
+  tamanio() {
     return this.heap.length;
   }
 
-  _bubbleUp(index) {
-    while (index > 0) {
-      const parentIndex = Math.floor((index - 1) / 2);
-      if (this.comparator(this.heap[index], this.heap[parentIndex]) < 0) {
-        [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
-        index = parentIndex;
+  _flotar(indice) {
+    while (indice > 0) {
+      const padre = Math.floor((indice - 1) / 2);
+      if (this.comparador(this.heap[indice], this.heap[padre]) < 0) {
+        [this.heap[indice], this.heap[padre]] = [this.heap[padre], this.heap[indice]];
+        indice = padre;
       } else {
         break;
       }
     }
   }
 
-  _bubbleDown(index) {
-    const length = this.heap.length;
+  _hundir(indice) {
+    const len = this.heap.length;
     while (true) {
-      let target = index;
-      const left = 2 * index + 1;
-      const right = 2 * index + 2;
+      let objetivo = indice;
+      const izq = 2 * indice + 1;
+      const der = 2 * indice + 2;
 
-      if (left < length && this.comparator(this.heap[left], this.heap[target]) < 0) {
-        target = left;
+      if (izq < len && this.comparador(this.heap[izq], this.heap[objetivo]) < 0) {
+        objetivo = izq;
       }
-      if (right < length && this.comparator(this.heap[right], this.heap[target]) < 0) {
-        target = right;
+      if (der < len && this.comparador(this.heap[der], this.heap[objetivo]) < 0) {
+        objetivo = der;
       }
-      if (target !== index) {
-        [this.heap[index], this.heap[target]] = [this.heap[target], this.heap[index]];
-        index = target;
+      if (objetivo !== indice) {
+        [this.heap[indice], this.heap[objetivo]] = [this.heap[objetivo], this.heap[indice]];
+        indice = objetivo;
       } else {
         break;
       }
@@ -446,223 +503,233 @@ class PriorityQueue {
   }
 }
 
-module.exports = { version: "${id}", PriorityQueue };`
+module.exports = { version: "${ver}", ColaPrioridad };`
   },
   {
-    cat: 'structures',
-    type: 'prefix_trie',
-    title: 'prefix tree string search and autocomplete dictionary',
-    gen: (id) => `
-class TrieNode {
+    cat: 'estructuras',
+    slug: 'arbol_trie',
+    branch: 'arbol-trie',
+    title: 'arbol trie para busqueda y autocompletado',
+    desc: 'Estructura trie para almacenamiento eficiente de prefijos y busquedas rapidas.',
+    gen: (ver) => `
+class NodoTrie {
   constructor() {
-    this.children = new Map();
-    this.isEndOfWord = false;
+    this.hijos = new Map();
+    this.esFinDePalabra = false;
   }
 }
 
-class Trie {
+class ArbolTrie {
   constructor() {
-    this.root = new TrieNode();
+    this.raiz = new NodoTrie();
   }
 
-  insert(word) {
-    let current = this.root;
-    for (const char of word) {
-      if (!current.children.has(char)) {
-        current.children.set(char, new TrieNode());
+  insertar(palabra) {
+    let actual = this.raiz;
+    for (const char of palabra) {
+      if (!actual.hijos.has(char)) {
+        actual.hijos.set(char, new NodoTrie());
       }
-      current = current.children.get(char);
+      actual = actual.hijos.get(char);
     }
-    current.isEndOfWord = true;
+    actual.esFinDePalabra = true;
   }
 
-  search(word) {
-    let current = this.root;
-    for (const char of word) {
-      if (!current.children.has(char)) return false;
-      current = current.children.get(char);
+  buscar(palabra) {
+    let actual = this.raiz;
+    for (const char of palabra) {
+      if (!actual.hijos.has(char)) return false;
+      actual = actual.hijos.get(char);
     }
-    return current.isEndOfWord;
+    return actual.esFinDePalabra;
   }
 
-  startsWith(prefix) {
-    let current = this.root;
-    for (const char of prefix) {
-      if (!current.children.has(char)) return false;
-      current = current.children.get(char);
+  comienzaCon(prefijo) {
+    let actual = this.raiz;
+    for (const char of prefijo) {
+      if (!actual.hijos.has(char)) return false;
+      actual = actual.hijos.get(char);
     }
     return true;
   }
 }
 
-module.exports = { version: "${id}", Trie };`
+module.exports = { version: "${ver}", ArbolTrie };`
   },
   {
-    cat: 'structures',
-    type: 'disjoint_set_union',
-    title: 'disjoint set union find with path compression and rank',
-    gen: (id) => `
-class DisjointSet {
-  constructor(size) {
-    this.parent = Array.from({ length: size }, (_, i) => i);
-    this.rank = new Array(size).fill(0);
+    cat: 'estructuras',
+    slug: 'conjuntos_disjuntos',
+    branch: 'union-find',
+    title: 'union find con compresion de caminos',
+    desc: 'Estructura disjoint set con tecnicas de union por rango y compresion.',
+    gen: (ver) => `
+class ConjuntosDisjuntos {
+  constructor(tam) {
+    this.padre = Array.from({ length: tam }, (_, i) => i);
+    this.rango = new Array(tam).fill(0);
   }
 
-  find(i) {
-    if (this.parent[i] === i) return i;
-    this.parent[i] = this.find(this.parent[i]);
-    return this.parent[i];
+  buscar(i) {
+    if (this.padre[i] === i) return i;
+    this.padre[i] = this.buscar(this.padre[i]);
+    return this.padre[i];
   }
 
-  union(i, j) {
-    const rootI = this.find(i);
-    const rootJ = this.find(j);
-    if (rootI === rootJ) return false;
+  unir(i, j) {
+    const raizI = this.buscar(i);
+    const raizJ = this.buscar(j);
+    if (raizI === raizJ) return false;
 
-    if (this.rank[rootI] < this.rank[rootJ]) {
-      this.parent[rootI] = rootJ;
-    } else if (this.rank[rootI] > this.rank[rootJ]) {
-      this.parent[rootJ] = rootI;
+    if (this.rango[raizI] < this.rango[raizJ]) {
+      this.padre[raizI] = raizJ;
+    } else if (this.rango[raizI] > this.rango[raizJ]) {
+      this.padre[raizJ] = raizI;
     } else {
-      this.parent[rootJ] = rootI;
-      this.rank[rootI]++;
+      this.padre[raizJ] = raizI;
+      this.rango[raizI]++;
     }
     return true;
   }
 
-  connected(i, j) {
-    return this.find(i) === this.find(j);
+  estanConectados(i, j) {
+    return this.buscar(i) === this.buscar(j);
   }
 }
 
-module.exports = { version: "${id}", DisjointSet };`
+module.exports = { version: "${ver}", ConjuntosDisjuntos };`
   },
   {
-    cat: 'algorithms',
-    type: 'quicksort_engine',
-    title: 'in-place dual-pivot quicksort algorithm',
-    gen: (id) => `
-function partition(arr, low, high, comparator) {
-  const pivot = arr[high];
-  let i = low - 1;
+    cat: 'algoritmos',
+    slug: 'quicksort',
+    branch: 'ordenamiento-quicksort',
+    title: 'ordenamiento rapido quicksort in-place',
+    desc: 'Algoritmo de ordenamiento quicksort con particionado de lomuto.',
+    gen: (ver) => `
+function particionar(arr, bajo, alto, comparador) {
+  const pivote = arr[alto];
+  let i = bajo - 1;
 
-  for (let j = low; j < high; j++) {
-    if (comparator(arr[j], pivot) <= 0) {
+  for (let j = bajo; j < alto; j++) {
+    if (comparador(arr[j], pivote) <= 0) {
       i++;
-      const temp = arr[i];
+      const temporal = arr[i];
       arr[i] = arr[j];
-      arr[j] = temp;
+      arr[j] = temporal;
     }
   }
 
-  const swapTemp = arr[i + 1];
-  arr[i + 1] = arr[high];
-  arr[high] = swapTemp;
+  const intercambio = arr[i + 1];
+  arr[i + 1] = arr[alto];
+  arr[alto] = intercambio;
   return i + 1;
 }
 
-function quickSortHelper(arr, low, high, comparator) {
-  if (low < high) {
-    const pi = partition(arr, low, high, comparator);
-    quickSortHelper(arr, low, pi - 1, comparator);
-    quickSortHelper(arr, pi + 1, high, comparator);
+function auxiliarQuickSort(arr, bajo, alto, comparador) {
+  if (bajo < alto) {
+    const indiceParticion = particionar(arr, bajo, alto, comparador);
+    auxiliarQuickSort(arr, bajo, indiceParticion - 1, comparador);
+    auxiliarQuickSort(arr, indiceParticion + 1, alto, comparador);
   }
 }
 
-function quickSort(inputArray, comparator = (a, b) => a - b) {
-  const arr = [...inputArray];
-  quickSortHelper(arr, 0, arr.length - 1, comparator);
-  return arr;
+function ordenarQuickSort(arreglo, comparador = (a, b) => a - b) {
+  const copia = [...arreglo];
+  auxiliarQuickSort(copia, 0, copia.length - 1, comparador);
+  return copia;
 }
 
-module.exports = { version: "${id}", quickSort };`
+module.exports = { version: "${ver}", ordenarQuickSort };`
   },
   {
-    cat: 'algorithms',
-    type: 'dijkstra_graph',
-    title: 'shortest path weighted graph traversal with dijkstra',
-    gen: (id) => `
-class WeightedGraph {
+    cat: 'algoritmos',
+    slug: 'dijkstra',
+    branch: 'algoritmo-dijkstra',
+    title: 'busqueda de caminos minimos con dijkstra',
+    desc: 'Algoritmo de rutas optimas en grafos dirigidos ponderados.',
+    gen: (ver) => `
+class GrafoPonderado {
   constructor() {
-    this.adjacencyList = new Map();
+    this.listaAdyacencia = new Map();
   }
 
-  addVertex(vertex) {
-    if (!this.adjacencyList.has(vertex)) {
-      this.adjacencyList.set(vertex, []);
+  agregarVertice(vertice) {
+    if (!this.listaAdyacencia.has(vertice)) {
+      this.listaAdyacencia.set(vertice, []);
     }
   }
 
-  addEdge(node1, node2, weight) {
-    this.addVertex(node1);
-    this.addVertex(node2);
-    this.adjacencyList.get(node1).push({ node: node2, weight });
-    this.adjacencyList.get(node2).push({ node: node1, weight });
+  agregarArista(origen, destino, peso) {
+    this.agregarVertice(origen);
+    this.agregarVertice(destino);
+    this.listaAdyacencia.get(origen).push({ nodo: destino, peso });
+    this.listaAdyacencia.get(destino).push({ nodo: origen, peso });
   }
 
-  shortestPath(start, finish) {
-    const distances = {};
-    const previous = {};
-    const visited = new Set();
-    const nodes = new Set();
+  caminoMinimo(inicio, fin) {
+    const distancias = {};
+    const previo = {};
+    const visitados = new Set();
+    const nodos = new Set();
 
-    for (const vertex of this.adjacencyList.keys()) {
-      distances[vertex] = vertex === start ? 0 : Infinity;
-      previous[vertex] = null;
-      nodes.add(vertex);
+    for (const vertice of this.listaAdyacencia.keys()) {
+      distancias[vertice] = vertice === inicio ? 0 : Infinity;
+      previo[vertice] = null;
+      nodos.add(vertice);
     }
 
-    while (nodes.size > 0) {
-      let smallest = null;
-      for (const node of nodes) {
-        if (smallest === null || distances[node] < distances[smallest]) {
-          smallest = node;
+    while (nodos.size > 0) {
+      let menor = null;
+      for (const nodo of nodos) {
+        if (menor === null || distancias[nodo] < distancias[menor]) {
+          menor = nodo;
         }
       }
 
-      if (smallest === null || distances[smallest] === Infinity) break;
-      if (smallest === finish) {
-        const path = [];
-        let curr = finish;
-        while (curr) {
-          path.push(curr);
-          curr = previous[curr];
+      if (menor === null || distancias[menor] === Infinity) break;
+      if (menor === fin) {
+        const camino = [];
+        let actual = fin;
+        while (actual) {
+          camino.push(actual);
+          actual = previo[actual];
         }
-        return { distance: distances[finish], path: path.reverse() };
+        return { distancia: distancias[fin], camino: camino.reverse() };
       }
 
-      nodes.delete(smallest);
-      visited.add(smallest);
+      nodos.delete(menor);
+      visitados.add(menor);
 
-      for (const neighbor of this.adjacencyList.get(smallest)) {
-        if (visited.has(neighbor.node)) continue;
-        const alt = distances[smallest] + neighbor.weight;
-        if (alt < distances[neighbor.node]) {
-          distances[neighbor.node] = alt;
-          previous[neighbor.node] = smallest;
+      for (const vecino of this.listaAdyacencia.get(menor)) {
+        if (visitados.has(vecino.nodo)) continue;
+        const nuevaDist = distancias[menor] + vecino.peso;
+        if (nuevaDist < distancias[vecino.nodo]) {
+          distancias[vecino.nodo] = nuevaDist;
+          previo[vecino.nodo] = menor;
         }
       }
     }
 
-    return { distance: Infinity, path: [] };
+    return { distancia: Infinity, camino: [] };
   }
 }
 
-module.exports = { version: "${id}", WeightedGraph };`
+module.exports = { version: "${ver}", GrafoPonderado };`
   },
   {
-    cat: 'algorithms',
-    type: 'knapsack_dp',
-    title: 'dynamic programming 0-1 knapsack solver',
-    gen: (id) => `
-function knapsack(values, weights, capacity) {
-  const n = values.length;
-  const dp = Array.from({ length: n + 1 }, () => Array(capacity + 1).fill(0));
+    cat: 'algoritmos',
+    slug: 'mochila_dinamica',
+    branch: 'mochila-dinamica',
+    title: 'problema de la mochila 0-1 con programacion dinamica',
+    desc: 'Solucion clasica al problema de la mochila mediante matriz de programacion dinamica.',
+    gen: (ver) => `
+function resolverMochila(valores, pesos, capacidad) {
+  const n = valores.length;
+  const dp = Array.from({ length: n + 1 }, () => Array(capacidad + 1).fill(0));
 
   for (let i = 1; i <= n; i++) {
-    const val = values[i - 1];
-    const wt = weights[i - 1];
-    for (let w = 1; w <= capacity; w++) {
+    const val = valores[i - 1];
+    const wt = pesos[i - 1];
+    for (let w = 1; w <= capacidad; w++) {
       if (wt <= w) {
         dp[i][w] = Math.max(dp[i - 1][w], dp[i - 1][w - wt] + val);
       } else {
@@ -671,57 +738,61 @@ function knapsack(values, weights, capacity) {
     }
   }
 
-  return dp[n][capacity];
+  return dp[n][capacidad];
 }
 
-module.exports = { version: "${id}", knapsack };`
+module.exports = { version: "${ver}", resolverMochila };`
   },
   {
-    cat: 'algorithms',
-    type: 'search_binary_jump',
-    title: 'binary and jump search comparison routines',
-    gen: (id) => `
-function binarySearch(arr, target) {
-  let low = 0;
-  let high = arr.length - 1;
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    if (arr[mid] === target) return mid;
-    if (arr[mid] < target) low = mid + 1;
-    else high = mid - 1;
+    cat: 'algoritmos',
+    slug: 'busqueda_binaria',
+    branch: 'busqueda-binaria',
+    title: 'algoritmos de busqueda binaria y salto',
+    desc: 'Implementaciones de busqueda binaria clasica y busqueda por bloques o saltos.',
+    gen: (ver) => `
+function busquedaBinaria(arr, objetivo) {
+  let inicio = 0;
+  let fin = arr.length - 1;
+  while (inicio <= fin) {
+    const medio = Math.floor((inicio + fin) / 2);
+    if (arr[medio] === objetivo) return medio;
+    if (arr[medio] < objetivo) inicio = medio + 1;
+    else fin = medio - 1;
   }
   return -1;
 }
 
-function jumpSearch(arr, target) {
+function busquedaPorSaltos(arr, objetivo) {
   const n = arr.length;
-  let step = Math.floor(Math.sqrt(n));
-  let prev = 0;
+  let paso = Math.floor(Math.sqrt(n));
+  let previo = 0;
 
-  while (arr[Math.min(step, n) - 1] < target) {
-    prev = step;
-    step += Math.floor(Math.sqrt(n));
-    if (prev >= n) return -1;
+  while (arr[Math.min(paso, n) - 1] < objetivo) {
+    previo = paso;
+    paso += Math.floor(Math.sqrt(n));
+    if (previo >= n) return -1;
   }
 
-  while (arr[prev] < target) {
-    prev++;
-    if (prev === Math.min(step, n)) return -1;
+  while (arr[previo] < objetivo) {
+    previo++;
+    if (previo === Math.min(paso, n)) return -1;
   }
 
-  return arr[prev] === target ? prev : -1;
+  return arr[previo] === objetivo ? previo : -1;
 }
 
-module.exports = { version: "${id}", binarySearch, jumpSearch };`
+module.exports = { version: "${ver}", busquedaBinaria, busquedaPorSaltos };`
   },
   {
-    cat: 'strings',
-    type: 'levenshtein_distance',
-    title: 'fuzzy string matching and edit distance metric',
-    gen: (id) => `
-function levenshteinDistance(strA, strB) {
-  const m = strA.length;
-  const n = strB.length;
+    cat: 'texto',
+    slug: 'distancia_levenshtein',
+    branch: 'distancia-levenshtein',
+    title: 'calculo de distancia de edicion levenshtein',
+    desc: 'Metrica de distancia levenshtein para comparacion difusa de cadenas.',
+    gen: (ver) => `
+function distanciaLevenshtein(cadA, cadB) {
+  const m = cadA.length;
+  const n = cadB.length;
   const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
 
   for (let i = 0; i <= m; i++) dp[i][0] = i;
@@ -729,7 +800,7 @@ function levenshteinDistance(strA, strB) {
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (strA[i - 1] === strB[j - 1]) {
+      if (cadA[i - 1] === cadB[j - 1]) {
         dp[i][j] = dp[i - 1][j - 1];
       } else {
         dp[i][j] = 1 + Math.min(
@@ -744,22 +815,24 @@ function levenshteinDistance(strA, strB) {
   return dp[m][n];
 }
 
-function stringSimilarity(strA, strB) {
-  const maxLen = Math.max(strA.length, strB.length);
-  if (maxLen === 0) return 1.0;
-  const distance = levenshteinDistance(strA, strB);
-  return (maxLen - distance) / maxLen;
+function similitudCadenas(cadA, cadB) {
+  const maxLongitud = Math.max(cadA.length, cadB.length);
+  if (maxLongitud === 0) return 1.0;
+  const distancia = distanciaLevenshtein(cadA, cadB);
+  return (maxLongitud - distancia) / maxLongitud;
 }
 
-module.exports = { version: "${id}", levenshteinDistance, stringSimilarity };`
+module.exports = { version: "${ver}", distanciaLevenshtein, similitudCadenas };`
   },
   {
-    cat: 'strings',
-    type: 'slug_case_converter',
-    title: 'slugification and case formatting transformations',
-    gen: (id) => `
-function toSlug(str) {
-  return str
+    cat: 'texto',
+    slug: 'formateador_cadenas',
+    branch: 'formateador-cadenas',
+    title: 'conversion de slugs y estilos de nomenclatura',
+    desc: 'Funciones para generar slugs web limpios y transformar entre camelCase y snake_case.',
+    gen: (ver) => `
+function generarSlug(cadena) {
+  return cadena
     .toLowerCase()
     .trim()
     .normalize('NFD')
@@ -769,157 +842,167 @@ function toSlug(str) {
     .replace(/-+/g, '-');
 }
 
-function toCamelCase(str) {
-  return str.replace(/([-_][a-z])/gi, ($1) =>
+function convertirACamelCase(cadena) {
+  return cadena.replace(/([-_][a-z])/gi, ($1) =>
     $1.toUpperCase().replace('-', '').replace('_', '')
   );
 }
 
-function toSnakeCase(str) {
-  return str
+function convertirASnakeCase(cadena) {
+  return cadena
     .replace(/([A-Z])/g, '_$1')
     .toLowerCase()
     .replace(/^_/, '');
 }
 
-module.exports = { version: "${id}", toSlug, toCamelCase, toSnakeCase };`
+module.exports = { version: "${ver}", generarSlug, convertirACamelCase, convertirASnakeCase };`
   },
   {
-    cat: 'strings',
-    type: 'template_engine',
-    title: 'mustache style template string interpolation engine',
-    gen: (id) => `
-function interpolate(template, context) {
-  return template.replace(/\\{\\{\\s*([a-zA-Z0-9_.]+)\\s*\\}\\}/g, (match, key) => {
-    const keys = key.split('.');
-    let value = context;
-    for (const k of keys) {
-      if (value === null || value === undefined) return '';
-      value = value[k];
+    cat: 'texto',
+    slug: 'motor_plantillas',
+    branch: 'motor-plantillas',
+    title: 'motor de interpolacion de plantillas dinamicas',
+    desc: 'Motor ligero de reemplazo de variables con soporte para propiedades anidadas.',
+    gen: (ver) => `
+function interpolarPlantilla(plantilla, contexto) {
+  return plantilla.replace(/\\{\\{\\s*([a-zA-Z0-9_.]+)\\s*\\}\\}/g, (match, clave) => {
+    const propiedades = clave.split('.');
+    let valor = contexto;
+    for (const p of propiedades) {
+      if (valor === null || valor === undefined) return '';
+      valor = valor[p];
     }
-    return value !== undefined && value !== null ? String(value) : '';
+    return valor !== undefined && valor !== null ? String(valor) : '';
   });
 }
 
-function extractVariables(template) {
-  const matches = [...template.matchAll(/\\{\\{\\s*([a-zA-Z0-9_.]+)\\s*\\}\\}/g)];
-  return [...new Set(matches.map((m) => m[1]))];
+function extraerVariablesPlantilla(plantilla) {
+  const coincidencias = [...plantilla.matchAll(/\\{\\{\\s*([a-zA-Z0-9_.]+)\\s*\\}\\}/g)];
+  return [...new Set(coincidencias.map((m) => m[1]))];
 }
 
-module.exports = { version: "${id}", interpolate, extractVariables };`
+module.exports = { version: "${ver}", interpolarPlantilla, extraerVariablesPlantilla };`
   },
   {
     cat: 'async',
-    type: 'retry_backoff',
-    title: 'exponential backoff and jitter retry supervisor',
-    gen: (id) => `
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+    slug: 'reintento_exponencial',
+    branch: 'reintento-exponencial',
+    title: 'mecanismo de reintento con retroceso exponencial',
+    desc: 'Supervisor de reintentos para operaciones asincronas con factor de jitter.',
+    gen: (ver) => `
+function pausar(ms) {
+  return new Promise((resolver) => setTimeout(resolver, ms));
 }
 
-async function retryWithBackoff(fn, options = {}) {
+async function reintentarConRetroceso(tarea, opciones = {}) {
   const {
-    maxRetries = 3,
-    initialDelay = 100,
-    maxDelay = 2000,
-    factor = 2,
-    jitter = true
-  } = options;
+    intentosMaximos = 3,
+    demoraInicial = 100,
+    demoraMaxima = 2000,
+    factorMultiplicador = 2,
+    aplicarJitter = true
+  } = opciones;
 
-  let attempt = 0;
-  let delay = initialDelay;
+  let intento = 0;
+  let demoraActual = demoraInicial;
 
   while (true) {
     try {
-      attempt++;
-      return await fn(attempt);
-    } catch (err) {
-      if (attempt >= maxRetries) throw err;
-      const actualDelay = jitter ? delay * (0.8 + Math.random() * 0.4) : delay;
-      await sleep(Math.min(actualDelay, maxDelay));
-      delay = Math.min(delay * factor, maxDelay);
+      intento++;
+      return await tarea(intento);
+    } catch (error) {
+      if (intento >= intentosMaximos) throw error;
+      const variacion = aplicarJitter ? demoraActual * (0.8 + Math.random() * 0.4) : demoraActual;
+      await pausar(Math.min(variacion, demoraMaxima));
+      demoraActual = Math.min(demoraActual * factorMultiplicador, demoraMaxima);
     }
   }
 }
 
-module.exports = { version: "${id}", sleep, retryWithBackoff };`
+module.exports = { version: "${ver}", pausar, reintentarConRetroceso };`
   },
   {
     cat: 'async',
-    type: 'concurrency_pool',
-    title: 'asynchronous task pool and concurrency rate limiter',
-    gen: (id) => `
-class PromisePool {
-  constructor(concurrency = 4) {
-    this.concurrency = concurrency;
-    this.active = 0;
-    this.queue = [];
+    slug: 'control_concurrencia',
+    branch: 'control-concurrencia',
+    title: 'limitador de tasa de concurrencia',
+    desc: 'Manejador de colas de tareas con limite estricto de ejecucion simultanea.',
+    gen: (ver) => `
+class PiscinaConcurrencia {
+  constructor(limite = 4) {
+    this.limite = limite;
+    this.enEjecucion = 0;
+    this.colaEspera = [];
   }
 
-  async run(task) {
-    if (this.active >= this.concurrency) {
-      await new Promise((resolve) => this.queue.push(resolve));
+  async ejecutar(tarea) {
+    if (this.enEjecucion >= this.limite) {
+      await new Promise((resolve) => this.colaEspera.push(resolve));
     }
-    this.active++;
+    this.enEjecucion++;
     try {
-      return await task();
+      return await tarea();
     } finally {
-      this.active--;
-      if (this.queue.length > 0) {
-        const next = this.queue.shift();
-        next();
+      this.enEjecucion--;
+      if (this.colaEspera.length > 0) {
+        const siguiente = this.colaEspera.shift();
+        siguiente();
       }
     }
   }
 }
 
-module.exports = { version: "${id}", PromisePool };`
+module.exports = { version: "${ver}", PiscinaConcurrencia };`
   },
   {
-    cat: 'crypto',
-    type: 'fnv1a_hash',
-    title: 'fnv1a and adler32 high speed checksum algorithms',
-    gen: (id) => `
-function fnv1a32(str) {
+    cat: 'cripto',
+    slug: 'hash_fnv1a',
+    branch: 'checksum-fnv1a',
+    title: 'algoritmos de checksum fnv1a y adler32',
+    desc: 'Funciones de dispersion hash de alta velocidad para validacion de integridad.',
+    gen: (ver) => `
+function hashFNV1a(cadena) {
   let hash = 0x811c9dc5;
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i);
+  for (let i = 0; i < cadena.length; i++) {
+    hash ^= cadena.charCodeAt(i);
     hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
   }
   return hash >>> 0;
 }
 
-function adler32(str) {
+function checksumAdler32(cadena) {
   const MOD_ADLER = 65521;
   let a = 1;
   let b = 0;
-  for (let i = 0; i < str.length; i++) {
-    a = (a + str.charCodeAt(i)) % MOD_ADLER;
+  for (let i = 0; i < cadena.length; i++) {
+    a = (a + cadena.charCodeAt(i)) % MOD_ADLER;
     b = (b + a) % MOD_ADLER;
   }
   return ((b << 16) | a) >>> 0;
 }
 
-module.exports = { version: "${id}", fnv1a32, adler32 };`
+module.exports = { version: "${ver}", hashFNV1a, checksumAdler32 };`
   },
   {
-    cat: 'crypto',
-    type: 'pseudo_random',
-    title: 'deterministic mulberry32 and xorshift PRNG suite',
-    gen: (id) => `
-function mulberry32(seed) {
-  let a = seed >>> 0;
+    cat: 'cripto',
+    slug: 'generador_aleatorio',
+    branch: 'generador-aleatorio',
+    title: 'generador pseudoaleatorio determinista',
+    desc: 'Generador de secuencias pseudoaleatorias basado en el algoritmo mulberry32.',
+    gen: (ver) => `
+function generadorMulberry32(semilla) {
+  let estado = semilla >>> 0;
   return function() {
-    a |= 0;
-    a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    estado |= 0;
+    estado = (estado + 0x6D2B79F5) | 0;
+    let t = Math.imul(estado ^ (estado >>> 15), 1 | estado);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-function xorshift32(seed) {
-  let x = seed || 1;
+function generadorXorShift32(semilla) {
+  let x = semilla || 1;
   return function() {
     x ^= x << 13;
     x ^= x >>> 17;
@@ -928,178 +1011,194 @@ function xorshift32(seed) {
   };
 }
 
-module.exports = { version: "${id}", mulberry32, xorshift32 };`
+module.exports = { version: "${ver}", generadorMulberry32, generadorXorShift32 };`
   },
   {
-    cat: 'collections',
-    type: 'functional_chunker',
-    title: 'array partitioning grouping and chunking utilities',
-    gen: (id) => `
-function chunk(array, size = 1) {
-  if (!Array.isArray(array) || size < 1) return [];
-  const result = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
+    cat: 'colecciones',
+    slug: 'utilidades_listas',
+    branch: 'utilidades-listas',
+    title: 'utilidades para particionar y agrupar arreglos',
+    desc: 'Funciones funcionales para segmentar, particionar y agrupar colecciones de datos.',
+    gen: (ver) => `
+function dividirEnLotes(arreglo, tamanioLote = 1) {
+  if (!Array.isArray(arreglo) || tamanioLote < 1) return [];
+  const salida = [];
+  for (let i = 0; i < arreglo.length; i += tamanioLote) {
+    salida.push(arreglo.slice(i, i + tamanioLote));
   }
-  return result;
+  return salida;
 }
 
-function groupBy(array, keyGetter) {
-  const map = new Map();
-  for (const item of array) {
-    const key = typeof keyGetter === 'function' ? keyGetter(item) : item[keyGetter];
-    const collection = map.get(key);
-    if (!collection) {
-      map.set(key, [item]);
+function agruparPor(arreglo, selectorClave) {
+  const mapa = new Map();
+  for (const elemento of arreglo) {
+    const clave = typeof selectorClave === 'function' ? selectorClave(elemento) : elemento[selectorClave];
+    const grupo = mapa.get(clave);
+    if (!grupo) {
+      mapa.set(clave, [elemento]);
     } else {
-      collection.push(item);
+      grupo.push(elemento);
     }
   }
-  return Object.fromEntries(map);
+  return Object.fromEntries(mapa);
 }
 
-function partition(array, predicate) {
-  const truthy = [];
-  const falsy = [];
-  for (const item of array) {
-    if (predicate(item)) {
-      truthy.push(item);
+function particionar(arreglo, predicado) {
+  const verdaderos = [];
+  const falsos = [];
+  for (const item of arreglo) {
+    if (predicado(item)) {
+      verdaderos.push(item);
     } else {
-      falsy.push(item);
+      falsos.push(item);
     }
   }
-  return [truthy, falsy];
+  return [verdaderos, falsos];
 }
 
-module.exports = { version: "${id}", chunk, groupBy, partition };`
+module.exports = { version: "${ver}", dividirEnLotes, agruparPor, particionar };`
   },
   {
-    cat: 'events',
-    type: 'pub_sub_emitter',
-    title: 'event emitter with listener lifecycle management',
-    gen: (id) => `
-class EventEmitter {
+    cat: 'eventos',
+    slug: 'emisor_eventos',
+    branch: 'emisor-eventos',
+    title: 'bus emisor de eventos personalizado',
+    desc: 'Sistema de publicacion y suscripcion desacoplado con soporte para listeners unicos.',
+    gen: (ver) => `
+class EmisorEventos {
   constructor() {
-    this.events = new Map();
+    this.oyentes = new Map();
   }
 
-  on(eventName, listener) {
-    if (!this.events.has(eventName)) {
-      this.events.set(eventName, []);
+  suscribir(evento, callback) {
+    if (!this.oyentes.has(evento)) {
+      this.oyentes.set(evento, []);
     }
-    this.events.get(eventName).push(listener);
-    return () => this.off(eventName, listener);
+    this.oyentes.get(evento).push(callback);
+    return () => this.cancelar(evento, callback);
   }
 
-  off(eventName, listener) {
-    const listeners = this.events.get(eventName);
-    if (!listeners) return;
-    this.events.set(eventName, listeners.filter((fn) => fn !== listener));
+  cancelar(evento, callback) {
+    const lista = this.oyentes.get(evento);
+    if (!lista) return;
+    this.oyentes.set(evento, lista.filter((fn) => fn !== callback));
   }
 
-  emit(eventName, ...args) {
-    const listeners = this.events.get(eventName);
-    if (!listeners) return;
-    for (const fn of listeners) {
-      fn(...args);
+  emitir(evento, ...datos) {
+    const lista = this.oyentes.get(evento);
+    if (!lista) return;
+    for (const callback of lista) {
+      callback(...datos);
     }
   }
 
-  once(eventName, listener) {
-    const unsubscribe = this.on(eventName, (...args) => {
-      unsubscribe();
-      listener(...args);
+  suscribirUnaVez(evento, callback) {
+    const desuscribir = this.suscribir(evento, (...datos) => {
+      desuscribir();
+      callback(...datos);
     });
   }
 }
 
-module.exports = { version: "${id}", EventEmitter };`
+module.exports = { version: "${ver}", EmisorEventos };`
   },
   {
-    cat: 'validation',
-    type: 'schema_validator',
-    title: 'declarative object schema and rule validator',
-    gen: (id) => `
-class SchemaValidator {
-  constructor(rules) {
-    this.rules = rules;
+    cat: 'validacion',
+    slug: 'validador_esquemas',
+    branch: 'validador-esquemas',
+    title: 'validador declarativo de esquemas y tipos',
+    desc: 'Motor de validacion de objetos con reglas obligatorias, tipos de datos y rangos.',
+    gen: (ver) => `
+class ValidadorEsquema {
+  constructor(reglas) {
+    this.reglas = reglas;
   }
 
-  validate(data) {
-    const errors = {};
-    for (const [field, rule] of Object.entries(this.rules)) {
-      const val = data[field];
-      if (rule.required && (val === undefined || val === null || val === '')) {
-        errors[field] = 'Field is required';
+  validar(datos) {
+    const fallos = {};
+    for (const [campo, regla] of Object.entries(this.reglas)) {
+      const valor = datos[campo];
+      if (regla.requerido && (valor === undefined || valor === null || valor === '')) {
+        fallos[campo] = 'El campo es obligatorio';
         continue;
       }
-      if (val !== undefined && rule.type && typeof val !== rule.type) {
-        errors[field] = "Expected " + rule.type + ", received " + typeof val;
+      if (valor !== undefined && regla.tipo && typeof valor !== regla.tipo) {
+        fallos[campo] = 'Se esperaba tipo ' + regla.tipo + ', recibido ' + typeof valor;
         continue;
       }
-      if (rule.min !== undefined && val < rule.min) {
-        errors[field] = "Minimum value is " + rule.min;
+      if (regla.minimo !== undefined && valor < regla.minimo) {
+        fallos[campo] = 'El valor minimo permitido es ' + regla.minimo;
       }
     }
-    return { isValid: Object.keys(errors).length === 0, errors };
+    return { valido: Object.keys(fallos).length === 0, errores: fallos };
   }
 }
 
-module.exports = { version: "${id}", SchemaValidator };`
+module.exports = { version: "${ver}", ValidadorEsquema };`
   },
   {
-    cat: 'datetime',
-    type: 'duration_diff',
-    title: 'time duration formatting and business day calculations',
-    gen: (id) => `
-function formatDurationMs(ms) {
-  const seconds = Math.floor((ms / 1000) % 60);
-  const minutes = Math.floor((ms / (1000 * 60)) % 60);
-  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
-  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    cat: 'fechas',
+    slug: 'calculo_fechas',
+    branch: 'calculo-fechas',
+    title: 'calculo de dias laborables y duracion',
+    desc: 'Funciones de conteo de dias habiles excluyendo fines de semana y formato de duracion.',
+    gen: (ver) => `
+function formatearDuracion(milisegundos) {
+  const seg = Math.floor((milisegundos / 1000) % 60);
+  const min = Math.floor((milisegundos / (1000 * 60)) % 60);
+  const horas = Math.floor((milisegundos / (1000 * 60 * 60)) % 24);
+  const dias = Math.floor(milisegundos / (1000 * 60 * 60 * 24));
 
-  const parts = [];
-  if (days > 0) parts.push(days + 'd');
-  if (hours > 0) parts.push(hours + 'h');
-  if (minutes > 0) parts.push(minutes + 'm');
-  parts.push(seconds + 's');
-  return parts.join(' ');
+  const partes = [];
+  if (dias > 0) partes.push(dias + 'd');
+  if (horas > 0) partes.push(horas + 'h');
+  if (min > 0) partes.push(min + 'm');
+  partes.push(seg + 's');
+  return partes.join(' ');
 }
 
-function isWeekend(date) {
-  const day = date.getDay();
-  return day === 0 || day === 6;
+function esFinDeSemana(fecha) {
+  const dia = fecha.getDay();
+  return dia === 0 || dia === 6;
 }
 
-function addBusinessDays(startDate, daysToAdd) {
-  const result = new Date(startDate);
-  let added = 0;
-  while (added < daysToAdd) {
-    result.setDate(result.getDate() + 1);
-    if (!isWeekend(result)) added++;
+function sumarDiasLaborables(fechaInicio, cantidadDias) {
+  const copia = new Date(fechaInicio);
+  let agregados = 0;
+  while (agregados < cantidadDias) {
+    copia.setDate(copia.getDate() + 1);
+    if (!esFinDeSemana(copia)) agregados++;
   }
-  return result;
+  return copia;
 }
 
-module.exports = { version: "${id}", formatDurationMs, isWeekend, addBusinessDays };`
+module.exports = { version: "${ver}", formatearDuracion, esFinDeSemana, sumarDiasLaborables };`
   }
 ];
 
 function generateModule(index) {
   const catObj = CATEGORIES[index % CATEGORIES.length];
-  const uniqueId = 'mod_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
+  const cycle = Math.floor(index / CATEGORIES.length) + 1;
+  const suffix = cycle > 1 ? `_v${cycle}` : '';
+  const branchSuffix = cycle > 1 ? `-v${cycle}` : '';
+
   const relativeDir = path.join('src', 'modules', catObj.cat);
-  const fileName = catObj.type + '_' + uniqueId + '.js';
+  const fileName = `${catObj.slug}${suffix}.js`;
   const fullPath = path.join(relativeDir, fileName);
 
-  const codeContent = catObj.gen(uniqueId).trim();
-  const commitTitle = 'feat(' + catObj.cat + '): implement ' + catObj.title + ' [' + uniqueId + ']';
-  const prBody = 'Adds procedural implementation for **' + catObj.title + '** under `' + catObj.cat + '/' + catObj.type + '`.';
+  const versionString = cycle > 1 ? `v${cycle}.0.0` : '1.0.0';
+  const codeContent = catObj.gen(versionString).trim();
+
+  const action = cycle === 1 ? 'implementar' : 'actualizar';
+  const commitTitle = `feat(${catObj.cat}): ${action} ${catObj.title}${cycle > 1 ? ` (v${cycle})` : ''}`;
+  const branchName = `feat/${catObj.branch}${branchSuffix}`;
+  const prBody = `${catObj.desc}\n\nModulo ubicado en \`${catObj.cat}/${fileName}\`.`;
 
   return {
     relativeDir,
     fileName,
     fullPath,
+    branchName,
     codeContent,
     commitTitle,
     prBody,
